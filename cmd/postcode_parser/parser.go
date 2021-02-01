@@ -23,9 +23,7 @@ type outputData struct {
 }
 
 type address struct {
-    Name      string
-    Street    string
-    City      string
+    Parts     []string
     StateCode string
 }
 
@@ -71,7 +69,7 @@ func parse(data string) (e error, result string) {
         items := itemsByCode[code]
         peopleList := []string{}
         for _, v := range items {
-            peopleList = append(peopleList, "..... "+v.Name+" "+v.Street+" "+v.City+" "+statesList[code])
+            peopleList = append(peopleList, "..... " + strings.Join(v.Parts, " ") + " " + statesList[code])
         }
 
         // Sort by address string
@@ -83,32 +81,35 @@ func parse(data string) (e error, result string) {
         resultStrings = append(resultStrings, resultString)
     }
 
-    var resultData outputData
-    resultData.ResType = theData.ReqType
-    resultData.Result = "success"
-    resultData.Data = strings.Join(resultStrings, "\n")
-
+    resultData := outputData{
+        theData.ReqType,
+        "success",
+        strings.Join(resultStrings, "\n "),
+    }
     resultBytes, _ := json.Marshal(resultData)
 
     return e, string(resultBytes)
 }
 
 func parseAddress(s string) (a address, e error) {
-    parts := strings.Split(s, ",")
-    if len(parts) < 3 {
+    a.Parts = strings.Split(s, ",")
+    if len(a.Parts) < 3 {
         return address{}, errors.New("incorrect item format")
     }
+    for i, s := range a.Parts {
+        a.Parts[i] = strings.Trim(s, " ")
+    }
 
-    a.Name = strings.Trim(parts[0], " ")
-    a.Street = strings.Trim(parts[1], " ")
-
-    stateString := strings.Trim(parts[2], " ")
-    stateParts := strings.Split(stateString, " ")
+    stateParts := strings.Split(a.Parts[len(a.Parts) - 1], " ")
     if len(stateParts) < 2 {
         return address{}, errors.New("incorrect item format")
     }
-    a.City = strings.Join(stateParts[0:len(stateParts)-1], " ")
+    for i, s := range stateParts {
+        stateParts[i] = strings.Trim(s, " ")
+    }
+
     a.StateCode = stateParts[len(stateParts)-1]
+    a.Parts[len(a.Parts) - 1] = strings.Join(stateParts[0:len(stateParts)-1], " ")
     if _, ok := statesList[a.StateCode]; !ok {
         return address{}, errors.New("incorrect City code")
     }
