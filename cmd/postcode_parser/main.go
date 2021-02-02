@@ -21,7 +21,7 @@ var statesList = map[string]string{
 func main() {
     println("Start ParseServer ...")
     http.HandleFunc("/", ParseServer)
-    log.Fatal(http.ListenAndServe(":2000", nil))
+    log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func ParseServer(writer http.ResponseWriter, request *http.Request) {
