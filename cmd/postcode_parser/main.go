@@ -26,19 +26,22 @@ func main() {
 
 func ParseServer(writer http.ResponseWriter, request *http.Request) {
     if request.Method != "POST" {
-        io.WriteString(writer, "{expected POST}")
+        writer.WriteHeader(http.StatusMethodNotAllowed)
+        io.WriteString(writer, "{\"result\":\"fail\",\"data\":\"POST request expected\"}")
         return
     }
 
     body, err := ioutil.ReadAll(request.Body)
     if err != nil {
-        io.WriteString(writer, "{some error}")
+        writer.WriteHeader(http.StatusBadRequest)
+        io.WriteString(writer, "{\"result\":\"fail\",\"data\":\""+err.Error()+"\"}")
         return
     }
 
     err, output := parse(string(body))
     if err != nil {
-        io.WriteString(writer, "{some error}")
+        writer.WriteHeader(http.StatusBadRequest)
+        io.WriteString(writer, "{\"result\":\"fail\",\"data\":\""+err.Error()+"\"}")
         return
     }
 

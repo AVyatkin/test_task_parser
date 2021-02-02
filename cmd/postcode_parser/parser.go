@@ -31,7 +31,7 @@ func parse(data string) (e error, result string) {
     var theData inputData
     err := json.Unmarshal([]byte(data), &theData)
     if err != nil {
-        return e, result
+        return errors.New("Json parse error: " + err.Error()), result
     }
 
     // Keeps different states
